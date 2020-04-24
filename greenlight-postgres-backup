@@ -2,7 +2,6 @@
 # backup the greenlight postgres dbs
 # (c) 2020-2038 cc-by-nc-sa wotwot
 
-set -x
 now=`date +%Y%m%d-%H%M`
 host=`hostname -s`
 file="postgres-${host}-${now}.sql"
@@ -20,7 +19,7 @@ cd /root/greenlight || \
 	exit
 	}
 
-docker ps || exit
+#docker ps || exit
 
 docker exec -u postgres ${dbname} pg_dumpall > ${file}
 
