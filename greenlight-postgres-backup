@@ -1,0 +1,26 @@
+#!/bin/bash
+# backup the greenlight postgres dbs
+# (c) 2020-2038 cc-by-nc-sa wotwot
+
+set -x
+now=`date +%Y%m%d-%H%M`
+host=`hostname -s`
+file="postgres-${host}-${now}.sql"
+dir="/var/backups/postgresql"
+dbname="greenlight_db_1"
+
+if [ ! -d "$dir" ] ; then
+	echo "no $dir, making one"
+	mkdir $dir
+fi
+
+cd /root/greenlight || \
+	{
+	echo "greenlight not found"
+	exit
+	}
+
+docker ps || exit
+
+docker exec -u postgres ${dbname} pg_dumpall > ${file}
+

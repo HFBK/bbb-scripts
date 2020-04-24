@@ -1,0 +1,5 @@
+#!/bin/sh
+cd ~/greenlight
+docker-compose down
+docker-compose up -d
+systemctl restart nginx.service

@@ -1,0 +1,4 @@
+#!/bin/sh
+cd ~/greenlight
+docker exec greenlight-v2 bundle exec rake user:create["admin","admin@email.org","password","admin"]
+

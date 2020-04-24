@@ -1,0 +1,3 @@
+#!/bin/sh
+cd ~/greenlight
+docker run --rm --env-file .env bigbluebutton/greenlight:v2 bundle exec rake conf:check
