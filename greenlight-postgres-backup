@@ -19,7 +19,11 @@ cd /root/greenlight || \
 	exit
 	}
 
-#docker ps || exit
+docker ps || \
+	{
+	echo "docker not running"
+	exit
+	}
 
 docker exec -u postgres ${dbname} pg_dumpall > ${dir}/${file}
 
