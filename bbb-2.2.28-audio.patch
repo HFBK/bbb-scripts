@@ -1,0 +1,81 @@
+diff -rwu 2.2.28/opt/freeswitch/etc/freeswitch/autoload_configs/conference.conf.xml new/opt/freeswitch/etc/freeswitch/autoload_configs/conference.conf.xml
+--- 2.2.28/opt/freeswitch/etc/freeswitch/autoload_configs/conference.conf.xml	2020-10-28 12:22:32.953603167 +0100
++++ new/opt/freeswitch/etc/freeswitch/autoload_configs/conference.conf.xml	2020-10-28 12:12:44.324278098 +0100
+@@ -196,6 +196,7 @@
+       <param name="domain" value="$${domain}"/>
+       <param name="rate" value="48000"/>
+       <param name="interval" value="20"/>
++      <param name="channels" value="2"/>
+       <param name="energy-level" value="100"/>
+       <!-- <param name="sound-prefix" value="$${sounds_dir}/en/us/callie"/> -->
+       <param name="muted-sound" value="conference/conf-muted.wav"/>
+diff -rwu 2.2.28/opt/freeswitch/etc/freeswitch/autoload_configs/opus.conf.xml new/opt/freeswitch/etc/freeswitch/autoload_configs/opus.conf.xml
+--- 2.2.28/opt/freeswitch/etc/freeswitch/autoload_configs/opus.conf.xml	2020-10-28 14:49:04.822277487 +0100
++++ new/opt/freeswitch/etc/freeswitch/autoload_configs/opus.conf.xml	2020-10-28 12:13:01.325816501 +0100
+@@ -1,13 +1,19 @@
++<?xml version="1.0" encoding="UTF-8"?>
+ <configuration name="opus.conf">
+       <settings>
+         <param name="use-vbr" value="1"/>
+         <param name="use-dtx" value="0"/>
+-	<param name="complexity" value="5"/>
+-
++      <param name="complexity" value="10" />
+         <param name="packet-loss-percent" value="15"/>
+         <param name="keep-fec-enabled" value="1"/>
+         <param name="use-jb-lookahead" value="1"/>
+         <param name="advertise-useinbandfec" value="1"/>
++      <param name="adjust-bitrate" value="1" />
++      <param name="maxaveragebitrate" value="256000" />
++      <param name="maxplaybackrate" value="48000" />
++      <param name="sprop-maxcapturerate" value="48000" />
++      <param name="sprop-stereo" value="1" />
++      <param name="negotiate-bitrate" value="1" />
+       </settings>
+ </configuration>
+ 
+diff -rwu 2.2.28/opt/freeswitch/etc/freeswitch/dialplan/default/bbb_conference.xml new/opt/freeswitch/etc/freeswitch/dialplan/default/bbb_conference.xml
+--- 2.2.28/opt/freeswitch/etc/freeswitch/dialplan/default/bbb_conference.xml	2020-10-28 12:24:17.447079507 +0100
++++ new/opt/freeswitch/etc/freeswitch/dialplan/default/bbb_conference.xml	2020-10-28 12:13:17.211253912 +0100
+@@ -1,9 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
+ <include>
+     <extension name="bbb_conferences_ws">
+       <condition field="${bbb_authorized}" expression="true" break="on-false"/>
+       <condition field="${sip_via_protocol}" expression="^wss?$"/>
+       <condition field="destination_number" expression="^(\d{5,11})$">
+-        <action application="jitterbuffer" data="60:120"/>
++         <action application="set" data="jitterbuffer_msec=60:120:20" />
++         <action application="set" data="rtp_jitter_buffer_plc=true" />
++         <action application="set" data="rtp_jitter_buffer_during_bridge=true" />
++         <action application="set" data="suppress_cng=true" />
+         <action application="answer"/>
+         <action application="conference" data="$1@cdquality"/>
+       </condition>
+@@ -11,9 +15,13 @@
+     <extension name="bbb_conferences">
+       <condition field="${bbb_authorized}" expression="true" break="on-false"/>
+       <condition field="destination_number" expression="^(\d{5,11})$">
+-        <action application="jitterbuffer" data="60:120"/>
++         <action application="set" data="jitterbuffer_msec=60:120:20" />
++         <action application="set" data="rtp_jitter_buffer_plc=true" />
++         <action application="set" data="rtp_jitter_buffer_during_bridge=true" />
++         <action application="set" data="suppress_cng=true" />
+         <action application="answer"/>
+         <action application="conference" data="$1@cdquality"/>
+       </condition>
+     </extension>
+ </include>
++
+diff -rwu 2.2.28/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml new/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml
+--- 2.2.28/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml	2020-10-28 14:47:45.115057771 +0100
++++ new/usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml	2020-10-28 12:13:54.534631158 +0100
+@@ -156,7 +156,7 @@
+     as_content: "1500"
+   OPUS:
+     useinbandfec: "1"
+-    maxaveragebitrate: "30000"
++    maxaveragebitrate: "256000"
+     maxplaybackrate: "48000"
+     ptime: "20"
+     minptime: "10"
